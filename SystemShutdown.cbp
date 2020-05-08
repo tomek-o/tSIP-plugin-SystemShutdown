@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="SystemShutdown" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/SystemShutdown" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option host_application="D:/Dokumenty/_PROJEKTY/libre/tSIP/tSIP/Debug_Build/tSIP.exe" />
+				<Option run_host_application_in_terminal="0" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-fshort-enums" />
+					<Add option="-DBUILD_DLL" />
+					<Add directory="jsoncpp/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-Wl,--add-stdcall-alias" />
+					<Add library="user32" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="cmd /c copy /Y $(TARGET_OUTPUT_FILE) D:\Dokumenty\_PROJEKTY\libre\tSIP\tSIP\Debug_Build\phone\" />
+					<Mode after="always" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/SystemShutdown" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-Os" />
+					<Add option="-Wall" />
+					<Add option="-fshort-enums" />
+					<Add option="-DBUILD_DLL" />
+					<Add directory="jsoncpp/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-Wl,--add-stdcall-alias" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="cmd /c copy /Y $(TARGET_OUTPUT_FILE) D:\Dokumenty\_PROJEKTY\libre\tSIP\tSIP\Debug_Build\phone\" />
+					<Mode after="always" />
+				</ExtraCommands>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-DBUILD_DLL" />
+		</Compiler>
+		<Linker>
+			<Add library="user32" />
+			<Add library="comctl32" />
+			<Add library="D:/progs/CodeBlocks/MinGW/lib/libpowrprof.a" />
+		</Linker>
+		<Unit filename="Utils.cpp" />
+		<Unit filename="Utils.h" />
+		<Unit filename="jsoncpp/include/json/autolink.h" />
+		<Unit filename="jsoncpp/include/json/config.h" />
+		<Unit filename="jsoncpp/include/json/forwards.h" />
+		<Unit filename="jsoncpp/include/json/json.h" />
+		<Unit filename="jsoncpp/include/json/reader.h" />
+		<Unit filename="jsoncpp/include/json/value.h" />
+		<Unit filename="jsoncpp/include/json/writer.h" />
+		<Unit filename="jsoncpp/src/lib_json/json_reader.cpp" />
+		<Unit filename="jsoncpp/src/lib_json/json_value.cpp" />
+		<Unit filename="jsoncpp/src/lib_json/json_writer.cpp" />
+		<Unit filename="main.cpp" />
+		<Unit filename="main.h" />
+		<Unit filename="resource.h" />
+		<Unit filename="resource.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="shutdown.cpp" />
+		<Unit filename="shutdown.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
