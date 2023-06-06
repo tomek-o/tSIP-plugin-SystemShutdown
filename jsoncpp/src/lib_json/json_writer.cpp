@@ -54,10 +54,18 @@ std::string valueToString( Value::UInt value )
 std::string valueToString( double value )
 {
    char buffer[32];
-#ifdef __STDC_SECURE_LIB__ // Use secure version with visual studio 2005 to avoid warning.
-   sprintf_s(buffer, sizeof(buffer), "%#.16g", value); 
-#else	
-   sprintf(buffer, "%#.16g", value); 
+#if 0
+	#ifdef __STDC_SECURE_LIB__ // Use secure version with visual studio 2005 to avoid warning.
+	   sprintf_s(buffer, sizeof(buffer), "%#.16g", value);
+	#else
+	   sprintf(buffer, "%#.16g", value);
+	#endif
+#else
+	#ifdef __STDC_SECURE_LIB__ // Use secure version with visual studio 2005 to avoid warning.
+	   sprintf_s(buffer, sizeof(buffer), "%#.6g", value);
+	#else
+	   sprintf(buffer, "%#.6g", value);
+	#endif
 #endif
    char* ch = buffer + strlen(buffer) - 1;
    if (*ch != '0') return (std::string)buffer; // nothing to truncate, so save time
@@ -746,7 +754,7 @@ void
 StyledStreamWriter::writeCommentAfterValueOnSameLine( const Value &root )
 {
    if ( root.hasComment( commentAfterOnSameLine ) )
-      *document_ << (" " + normalizeEOL( root.getComment( commentAfterOnSameLine ) ));
+      *document_ << ( " " + normalizeEOL( root.getComment( commentAfterOnSameLine ) ) );
 
    if ( root.hasComment( commentAfter ) )
    {

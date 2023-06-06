@@ -7,7 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <stdio.h>
-//#include <mem.h>
+#include <mem.h>
 
 #if _MSC_VER >= 1400 // VC++ 8.0
 #pragma warning( disable : 4996 )   // disable warning about strdup being deprecated.

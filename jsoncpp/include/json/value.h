@@ -14,6 +14,10 @@
 #  include <cpptl/forwards.h>
 # endif
 
+# ifdef __BORLANDC__
+#  include <System.hpp>	// AnsiString
+# endif
+
 /** \brief JSON (JavaScript Object Notation).
  */
 namespace Json {
@@ -197,7 +201,10 @@ namespace Json {
        * \endcode
        */
       Value( const StaticString &value );
-      Value( const std::string &value );
+	  Value( const std::string &value );
+#ifdef __BORLANDC__
+	  Value( const AnsiString &value );
+#endif
 # ifdef JSON_USE_CPPTL
       Value( const CppTL::ConstString &value );
 # endif
@@ -224,12 +231,15 @@ namespace Json {
       int compare( const Value &other );
 
       const char *asCString() const;
-      std::string asString() const;
+	  std::string asString() const;
+#ifdef __BORLANDC__
+	  AnsiString asAString() const;
+#endif
 # ifdef JSON_USE_CPPTL
       CppTL::ConstString asConstString() const;
 # endif
       Int asInt() const;
-      UInt asUInt() const;
+	  UInt asUInt() const;
       double asDouble() const;
       bool asBool() const;
 
@@ -320,13 +330,25 @@ namespace Json {
                  const Value &defaultValue ) const;
       /// Return the member named key if it exist, defaultValue otherwise.
       Value get( const std::string &key,
-                 const Value &defaultValue ) const;
+				 const Value &defaultValue ) const;
 # ifdef JSON_USE_CPPTL
-      /// Return the member named key if it exist, defaultValue otherwise.
-      Value get( const CppTL::ConstString &key,
-                 const Value &defaultValue ) const;
+	  /// Return the member named key if it exist, defaultValue otherwise.
+	  Value get( const CppTL::ConstString &key,
+				 const Value &defaultValue ) const;
 # endif
-      /// \brief Remove and return the named member.  
+
+      /// Try to get value with specified name, leave val as is otherwise
+#ifdef __BORLANDC__
+	  void getAString(const char* key, AnsiString &val) const;
+#endif
+	  void getString(const char* key, std::string &val) const;
+	  void getInt(const char* key, int &val) const;
+	  void getUInt(const char* key, unsigned int &val) const;
+	  void getBool(const char* key, bool &val) const;
+	  void getDouble(const char* key, double &val) const;
+	  void getFloat(const char* key, float &val) const;
+
+	  /// \brief Remove and return the named member.
       ///
       /// Do nothing if it did not exist.
       /// \return the removed Value, or null.

@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <cassert>
-//#include <mem.h>
+#include <mem.h>
 #ifdef JSON_USE_CPPTL
 # include <cpptl/conststring.h>
 #endif
@@ -85,7 +85,7 @@ public:
       //if ( !value  ||  value[0] == 0 )
       //   return 0;
 
-      if ( length == (unsigned)unknown )
+      if ( length == (unsigned int)unknown )
          length = (unsigned int)strlen(value);
       char *newString = static_cast<char *>( malloc( length + 1 ) );
       memcpy( newString, value, length );
@@ -223,7 +223,7 @@ bool
 Value::CZString::operator<( const CZString &other ) const 
 {
    if ( cstr_ )
-      return strcmp( cstr_, other.cstr_ ) < 0;
+      return ::strcmp( cstr_, other.cstr_ ) < 0;
    return index_ < other.index_;
 }
 
@@ -231,7 +231,7 @@ bool
 Value::CZString::operator==( const CZString &other ) const 
 {
    if ( cstr_ )
-      return strcmp( cstr_, other.cstr_ ) == 0;
+      return ::strcmp( cstr_, other.cstr_ ) == 0;
    return index_ == other.index_;
 }
 
@@ -364,10 +364,25 @@ Value::Value( const std::string &value )
    , itemIsUsed_( 0 )
 #endif
 {
-   value_.string_ = valueAllocator()->duplicateStringValue( value.c_str(), 
-                                                            (unsigned int)value.length() );
+   value_.string_ = valueAllocator()->duplicateStringValue( value.c_str(),
+															(unsigned int)value.length() );
 
 }
+
+#ifdef __BORLANDC__
+Value::Value( const AnsiString &value )
+   : type_( stringValue )
+   , allocated_( true )
+   , comments_( 0 )
+# ifdef JSON_VALUE_USE_INTERNAL_MAP
+   , itemIsUsed_( 0 )
+#endif
+{
+   value_.string_ = valueAllocator()->duplicateStringValue( value.c_str(),
+															(unsigned int)value.Length() );
+
+}
+#endif
 
 Value::Value( const StaticString &value )
    : type_( stringValue )
@@ -573,7 +588,7 @@ Value::operator <( const Value &other ) const
       return ( value_.string_ == 0  &&  other.value_.string_ )
              || ( other.value_.string_  
                   &&  value_.string_  
-                  && strcmp( value_.string_, other.value_.string_ ) < 0 );
+                  && ::strcmp( value_.string_, other.value_.string_ ) < 0 );
 #ifndef JSON_VALUE_USE_INTERNAL_MAP
    case arrayValue:
    case objectValue:
@@ -639,7 +654,7 @@ Value::operator ==( const Value &other ) const
       return ( value_.string_ == other.value_.string_ )
              || ( other.value_.string_  
                   &&  value_.string_  
-                  && strcmp( value_.string_, other.value_.string_ ) == 0 );
+				  && ::strcmp( value_.string_, other.value_.string_ ) == 0 );
 #ifndef JSON_VALUE_USE_INTERNAL_MAP
    case arrayValue:
    case objectValue:
@@ -671,17 +686,47 @@ Value::asCString() const
 }
 
 
-std::string 
+std::string
 Value::asString() const
 {
    switch ( type_ )
    {
    case nullValue:
-      return "";
+	  return "";
    case stringValue:
-      return value_.string_ ? value_.string_ : "";
+	  return value_.string_ ? value_.string_ : "";
    case booleanValue:
-      return value_.bool_ ? "true" : "false";
+	  return value_.bool_ ? "true" : "false";
+   case intValue:
+   case uintValue:
+   case realValue:
+   case arrayValue:
+   case objectValue:
+#ifdef __BORLANDC__
+#pragma warn -8008
+#endif
+	  JSON_ASSERT_MESSAGE( false, "Type is not convertible to string" );
+#ifdef __BORLANDC__
+#pragma warn .8008
+#endif
+   default:
+	  JSON_ASSERT_UNREACHABLE;
+   }
+   return ""; // unreachable
+}
+
+#ifdef __BORLANDC__
+AnsiString
+Value::asAString() const
+{
+   switch ( type_ )
+   {
+   case nullValue:
+	  return "";
+   case stringValue:
+	  return value_.string_ ? value_.string_ : "";
+   case booleanValue:
+	  return value_.bool_ ? "true" : "false";
    case intValue:
    case uintValue:
    case realValue:
@@ -691,10 +736,11 @@ Value::asString() const
 	  JSON_ASSERT_MESSAGE( false, "Type is not convertible to string" );
 #pragma warn .8008
    default:
-      JSON_ASSERT_UNREACHABLE;
+	  JSON_ASSERT_UNREACHABLE;
    }
    return ""; // unreachable
 }
+#endif
 
 # ifdef JSON_USE_CPPTL
 CppTL::ConstString 
@@ -724,9 +770,13 @@ Value::asInt() const
    case stringValue:
    case arrayValue:
    case objectValue:
+#ifdef __BORLANDC__
 #pragma warn -8008
+#endif
 	  JSON_ASSERT_MESSAGE( false, "Type is not convertible to int" );
+#ifdef __BORLANDC__
 #pragma warn .8008
+#endif
    default:
       JSON_ASSERT_UNREACHABLE;
    }
@@ -753,9 +803,13 @@ Value::asUInt() const
    case stringValue:
    case arrayValue:
    case objectValue:
+#ifdef __BORLANDC__
 #pragma warn -8008
+#endif
 	  JSON_ASSERT_MESSAGE( false, "Type is not convertible to uint" );
+#ifdef __BORLANDC__
 #pragma warn .8008
+#endif
    default:
       JSON_ASSERT_UNREACHABLE;
    }
@@ -780,9 +834,13 @@ Value::asDouble() const
    case stringValue:
    case arrayValue:
    case objectValue:
+#ifdef __BORLANDC__
 #pragma warn -8008
+#endif
 	  JSON_ASSERT_MESSAGE( false, "Type is not convertible to double" );
+#ifdef __BORLANDC__
 #pragma warn .8008
+#endif
    default:
       JSON_ASSERT_UNREACHABLE;
    }
@@ -1134,6 +1192,44 @@ Value::get( const std::string &key,
 {
    return get( key.c_str(), defaultValue );
 }
+
+#ifdef __BORLANDC__
+void Value::getAString(const char* key, AnsiString &val) const
+{
+	val = get(key, val).asAString();
+}
+#endif
+
+void Value::getString(const char* key, std::string &val) const
+{
+	val = get(key, val).asString();
+}
+
+void Value::getInt(const char* key, int &val) const
+{
+	val = get(key, val).asInt();
+}
+
+void Value::getUInt(const char* key, unsigned int &val) const
+{
+	val = get(key, val).asUInt();
+}
+
+void Value::getBool(const char* key, bool &val) const
+{
+	val = get(key, val).asBool();
+}
+
+void Value::getDouble(const char* key, double &val) const
+{
+	val = get(key, val).asDouble();
+}
+
+void Value::getFloat(const char* key, float &val) const
+{
+	val = get(key, val).asDouble();
+}
+
 
 Value
 Value::removeMember( const char* key )
