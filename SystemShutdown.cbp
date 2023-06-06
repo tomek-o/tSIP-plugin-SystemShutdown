@@ -36,6 +36,8 @@
 				<Option object_output="obj/Release/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
+				<Option host_application="../tSIP/tSIP/Debug_Build/tSIP.exe" />
+				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
@@ -50,7 +52,7 @@
 					<Add option="-Wl,--add-stdcall-alias" />
 				</Linker>
 				<ExtraCommands>
-					<Add after="cmd /c copy /Y $(TARGET_OUTPUT_FILE) D:\Dokumenty\_PROJEKTY\libre\tSIP\tSIP\Debug_Build\phone\" />
+					<Add after="cmd /c copy /Y $(TARGET_OUTPUT_FILE) ..\tSIP\tSIP\Debug_Build\phone\" />
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
@@ -62,7 +64,7 @@
 		<Linker>
 			<Add library="user32" />
 			<Add library="comctl32" />
-			<Add library="D:/progs/CodeBlocks/MinGW/lib/libpowrprof.a" />
+			<Add library="libpowrprof.a" />
 		</Linker>
 		<Unit filename="Utils.cpp" />
 		<Unit filename="Utils.h" />
