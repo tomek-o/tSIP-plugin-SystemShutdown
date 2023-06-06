@@ -20,11 +20,12 @@
 #include "..\tSIP\tSIP\phone\PhoneSettings.h"
 #include "..\tSIP\tSIP\phone\PhoneCapabilities.h"
 
-
+namespace
+{
+	
 HANDLE Thread;
-HANDLE SessionMutex;
 
-HWND hwndDP = NULL;
+HWND hwndDP = NULL;			///< date/time picker
 SYSTEMTIME stShutdown;      ///< requested time of shutdown
 bool bDeployed = false;     ///< are you ready to shutdown?
 bool bVisible = false;
@@ -32,8 +33,6 @@ HANDLE hwndGlobalDialog = NULL;
 const char *myname = "System Shutdown";
 const char *errorCaption = "SystemShutdown plugin";
 char *inifile = NULL;
-
-HINSTANCE hInst;
 
 SYSTEM_POWER_CAPABILITIES powerCapabilities;
 
@@ -56,6 +55,36 @@ enum ACTION
     ACTION_SHUTDOWN
 } action = ACTION_NONE;
 
+const double clfSecondsPer100ns = 100. * 1.E-9;
+void AddSecondsToSystemTime(SYSTEMTIME* timeIn, SYSTEMTIME* timeOut, double tfSeconds)
+{
+    union {
+        ULARGE_INTEGER li;
+        FILETIME       ft;
+    };
+
+    // Convert timeIn to filetime
+    SystemTimeToFileTime(timeIn, &ft);
+
+    // Add in the seconds
+    li.QuadPart += tfSeconds / clfSecondsPer100ns;
+
+    // Convert back to systemtime
+    FileTimeToSystemTime(&ft, timeOut);
+}
+
+void SetDateTimePickerOffset(int secondsFromNow)
+{
+	if (hwndDP == NULL)
+		return;
+	SYSTEMTIME stime;
+	GetLocalTime(&stime);
+	AddSecondsToSystemTime(&stime, &stime, secondsFromNow);
+	::SendMessage(hwndDP, DTM_SETSYSTEMTIME, 0, (LPARAM)&stime);
+}
+
+}
+
 BOOL CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     INITCOMMONCONTROLSEX icex;
@@ -73,15 +102,7 @@ BOOL CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         InitCommonControlsEx(&icex);
         if (hwndDlg)
         {
-            hwndDP = CreateWindowEx(0,
-                                    DATETIMEPICK_CLASS,
-                                    TEXT("DateTime"),
-                                    WS_BORDER|WS_CHILD|WS_VISIBLE|DTS_UPDOWN|DTS_TIMEFORMAT,
-                                    110, 5, 110, 25,
-                                    hwndDlg,
-                                    NULL,
-                                    NULL,
-                                    NULL);
+            hwndDP = GetDlgItem(hwndDlg, IDC_DATETIMEPICK);
             ::SendMessage(hwndDP, DTM_SETFORMAT, 0, (LPARAM)"[MM.dd]   HH:mm:ss");
         }
 
@@ -136,9 +157,14 @@ BOOL CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
-            /*
-             * TODO: Add more control ID's, when needed.
-             */
+		case IDC_BTN_10MIN:
+			SetDateTimePickerOffset(600);
+			return TRUE;
+
+		case IDC_BTN_12MIN:
+			SetDateTimePickerOffset(720);
+			return TRUE;			
+			        
         case IDC_BTN_ABORT:
             bDeployed = false;
             AbortSystemShutdown(NULL);
@@ -274,7 +300,7 @@ DWORD WINAPI ThreadProc(LPVOID data)
                 {
                     //ShellExecute(0, "open", "shutdown", "-s -t 30", NULL, 0);
                     rc = InitiateSystemShutdown( NULL,
-                                                 "Shutting down initiated by SystemShutdown plugin... "
+                                                 (char*)"Shutting down initiated by SystemShutdown plugin... "
                                                  "Use \"Disarm\" from plugin to interrupt this. "
                                                  "Warning: plugin window may be shown under this window.",
                                                  (DWORD) 60, true, false );
@@ -325,7 +351,7 @@ DWORD WINAPI ThreadDialog(LPVOID data)
     return 0;
 }
 
-/* extern "C" __declspec(dllexport) */ void GetPhoneInterfaceDescription(struct S_PHONE_DLL_INTERFACE* interf) {
+void GetPhoneInterfaceDescription(struct S_PHONE_DLL_INTERFACE* interf) {
     interf->majorVersion = dll_interface.majorVersion;
     interf->minorVersion = dll_interface.minorVersion;
 }
